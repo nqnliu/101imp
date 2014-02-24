@@ -1,30 +1,34 @@
 import java.util.*;
 
+/* 
+ * Graph is represented by an ArrayList of Vertex objects, each Vertex object
+ * contains an adjacency list.
+ */
 public class RandomGraph {
 
     private class Vertex {
-        int label;
         boolean visited;
+        HashMap<Vertex, Double> adjacencyList; // holds Vertex and weight
 
-        HashMap<Vertex, Double> adjacencyList;
-
-        public Vertex( int i ) {
-            label = i;
+        public Vertex() {
             visited = false;
             adjacencyList = new HashMap<Vertex, Double>();
         }
     }
 
-    ArrayList<Vertex> vertices;
+    ArrayList<Vertex> vertices; // list of all vertices in the Graph
     
     public RandomGraph( int n, double p ) {
+        // initialization
         Random generator = new Random();
         vertices = new ArrayList<Vertex>();
 
+        // create/add N amount of vertices into the ArrayList
         for ( int i = 0; i < n; i++ ) {
-            vertices.add( new Vertex(i) );
+            vertices.add( new Vertex() );
         }
 
+        // generate random edges
         for ( int i = 0; i < n; i++ ) {
             for ( int j = 0; j < n; j++ ) {
                 if ( i != j && generator.nextDouble() < p ) {
@@ -34,6 +38,7 @@ public class RandomGraph {
         }
     }
 
+    // Adds an edge using the INDICES of two vertices in the ArrayList
     public void addEdge( int i, int j, double weight ) {
         Vertex u = vertices.get( i );
         Vertex v = vertices.get( j );
@@ -41,9 +46,11 @@ public class RandomGraph {
         v.adjacencyList.put( u, weight );
     }
 
+    // Returns the number of connected components in the graph
     public int getCC(){
         int cc = 0;
 
+        // Everything below is DFS
         for ( Vertex v : vertices ) {
             v.visited = false;
         }
@@ -58,6 +65,7 @@ public class RandomGraph {
         return cc;
     }
 
+    // Perform DFS on a vertex to explore all reachable nodes
     public void dfs( Vertex s ) {
         Stack<Vertex> stack = new Stack<Vertex>();
         
@@ -75,13 +83,16 @@ public class RandomGraph {
         }        
     }
 
+    /*
     private class Edge {
         double weight;
 
         Vertex u;
         Vertex v;
     }
+    */
 
+    // Test main for now..
     public static void main( String [] args ) {
         RandomGraph rg = new RandomGraph(100, .01);
         System.out.println( rg.getCC() );
