@@ -1,8 +1,8 @@
 Constructing Graph G(n,p), n = 100
 --- MEAN: # of Connected Components ---
 100.0
-2.945
-1.035
+3.085
+1.03
 1.0
 1.0
 1.0
@@ -53,8 +53,8 @@ Constructing Graph G(n,p), n = 100
 0.0
 --- STANDARD DEVIATION: # of Connected Components ---
 0.0
-1.5073072016015845
-0.18377975949489092
+1.499258149886136
+0.17058722109231972
 0.0
 0.0
 0.0

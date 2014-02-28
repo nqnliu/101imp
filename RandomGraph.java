@@ -97,7 +97,7 @@ public class RandomGraph {
     private static double compute_mean(double a[], int n) {
         if(n== 0)
             return 0.0;
-        double sum= 0;
+        double sum= 0.0;
         for(int i= 0; i< n; i++) {
             sum+= a[i];
         }
@@ -145,34 +145,36 @@ public class RandomGraph {
         // an array to store runtime for sd, n= 20
         double[] runtimeSdTwenty= new double[51];
         // some counter for the arrays
+        double[] runtime = new double[51];
         int arrIndex= 0;
 
         out20.println("Constructing Graph G(n,p), n = " + n);
 
         // for increments of p
-        for (double p= 0; p<= 1.00; p+= 0.02) {
+        for (int p= 0; p<= 100; p+= 2) {
+            System.out.println( p );
             // Make k instances of the graph
             int sumCC= 0;
+
+            long startTime= System.currentTimeMillis();
             for (int i= 0; i< k; i++) {
-                RandomGraph rg = new RandomGraph(n, p);
+                RandomGraph rg = new RandomGraph(n, p/100.0);
                 int numCC= rg.getCC();
+                if ( p == 1.00 ) 
+                    System.out.println( numCC );
                 // store current k
                 kCC[i]= numCC;
             }
 
-            long startTime= System.currentTimeMillis();
             // store mean
             meanTwenty[arrIndex]= compute_mean(kCC, k);
             long endTime= System.currentTimeMillis();
-            double meanTime= (endTime- startTime);
-            runtimeMeanTwenty[arrIndex]= meanTime;
 
             // store sd
-            startTime= System.currentTimeMillis();
             sdTwenty[arrIndex]= std_dev(kCC, k, meanTwenty[arrIndex]);
-            endTime= System.currentTimeMillis();
             double sdTime= (endTime- startTime);
-            runtimeSdTwenty[arrIndex]= sdTime;
+            runtime[arrIndex] = sdTime;
+
 
             // inc index
             arrIndex++;
@@ -180,9 +182,9 @@ public class RandomGraph {
         // Output data 
         out20.println("--- MEAN: # of Connected Components ---");
         for(int i= 0; i< meanTwenty.length; i++) {
-            out20.println(meanTwenty[i]);
+            out20.format("%f\n", meanTwenty[i]);
         }
-        
+            
         out20.println("--- STANDARD DEVIATION: # of Connected Components ---");
         for(int i= 0; i< sdTwenty.length; i++) {
             out20.println(sdTwenty[i]);
@@ -190,7 +192,7 @@ public class RandomGraph {
 
         out20.println("--- RUNTIME: Mean (in Milliseconds) ---");
         for(int i= 0; i< runtimeMeanTwenty.length; i++) {
-            out20.println(runtimeMeanTwenty[i]);
+            out20.println(runtime[i]);
         }
 
         out20.println("--- RUNTIME: Standard Deviation (in Milliseconds) ---");
