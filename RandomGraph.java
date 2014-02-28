@@ -216,14 +216,14 @@ public class RandomGraph {
         //int k= 200;
         // an array to store each k, varies for each p
         //double[] kCC= new double[200];
-        // an array to store mean for n= 20
-        //double[] meanTwenty= new double[51];
-        // an array to store sd for n= 20
-        //double[] sdTwenty= new double[51];
-        // an array to store runtime for mean, n= 20
-        //double[] runtimeMeanTwenty= new double[51];
-        // an array to store runtime for sd, n= 20
-        //double[] runtimeSdTwenty= new double[51];
+        // an array to store mean for n= 100
+        double[] meanHundred= new double[51];
+        // an array to store sd for n= 100
+        double[] sdHundred= new double[51];
+        // an array to store runtime for mean, n= 100
+        double[] runtimeMeanHundred= new double[51];
+        // an array to store runtime for sd, n= 100
+        double[] runtimeSdHundred= new double[51];
 
         // some counter for the arrays
         arrIndex= 0;
@@ -243,40 +243,40 @@ public class RandomGraph {
 
             long startTime= System.currentTimeMillis();
             // store mean
-            meanTwenty[arrIndex]= compute_mean(kCC, k);
+            meanHundred[arrIndex]= compute_mean(kCC, k);
             long endTime= System.currentTimeMillis();
             double meanTime= (endTime- startTime);
-            runtimeMeanTwenty[arrIndex]= meanTime;
+            runtimeMeanHundred[arrIndex]= meanTime;
 
             // store sd
             startTime= System.currentTimeMillis();
-            sdTwenty[arrIndex]= std_dev(kCC, k, meanTwenty[arrIndex]);
+            sdHundred[arrIndex]= std_dev(kCC, k, meanHundred[arrIndex]);
             endTime= System.currentTimeMillis();
             double sdTime= (endTime- startTime);
-            runtimeSdTwenty[arrIndex]= sdTime;
+            runtimeSdHundred[arrIndex]= sdTime;
 
             // inc index
             arrIndex++;
         }
         // Output data 
         out100.println("--- MEAN ---");
-        for(int i= 0; i< meanTwenty.length; i++) {
-            out100.println(meanTwenty[i]);
+        for(int i= 0; i< meanHundred.length; i++) {
+            out100.println(meanHundred[i]);
         }
         
         out100.println("--- STANDARD DEVIATION ---");
-        for(int i= 0; i< sdTwenty.length; i++) {
-            out100.println(sdTwenty[i]);
+        for(int i= 0; i< sdHundred.length; i++) {
+            out100.println(sdHundred[i]);
         }
 
         out100.println("--- RUNTIME: Mean (in Milliseconds) ---");
-        for(int i= 0; i< runtimeMeanTwenty.length; i++) {
-            out100.println(runtimeMeanTwenty[i]);
+        for(int i= 0; i< runtimeMeanHundred.length; i++) {
+            out100.println(runtimeMeanHundred[i]);
         }
 
         out100.println("--- RUNTIME: Standard Deviation (in Milliseconds) ---");
-        for(int i= 0; i< runtimeSdTwenty.length; i++) {
-            out100.println(runtimeSdTwenty[i]);
+        for(int i= 0; i< runtimeSdHundred.length; i++) {
+            out100.println(runtimeSdHundred[i]);
         }
         // close the file
         out100.close();
