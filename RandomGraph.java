@@ -124,14 +124,12 @@ public class RandomGraph {
     public static void main( String [] args ) {
         // I/O stuff
         File outFile= new File("n20.txt");
-        PrintWriter out= new PrintWriter(new FileWriter(outFile));   
-
-        /* 
+        PrintWriter out= null;
         try {
             out= new PrintWriter(new FileWriter(outFile));
         } catch (Exception e) {
             System.out.println("SOMETHING WRONG~");
-        }*/
+        }
 
         /***** For n = 20 *****/
         int n= 20;
@@ -225,7 +223,8 @@ public class RandomGraph {
         // Print data
         */
 
-
+    // close the file
+    out.close();
     }
 }
 
