@@ -178,12 +178,12 @@ public class RandomGraph {
             arrIndex++;
         }
         // Output data 
-        out20.println("--- MEAN ---");
+        out20.println("--- MEAN: # of Connected Components ---");
         for(int i= 0; i< meanTwenty.length; i++) {
             out20.println(meanTwenty[i]);
         }
         
-        out20.println("--- STANDARD DEVIATION ---");
+        out20.println("--- STANDARD DEVIATION: # of Connected Components ---");
         for(int i= 0; i< sdTwenty.length; i++) {
             out20.println(sdTwenty[i]);
         }
@@ -259,12 +259,12 @@ public class RandomGraph {
             arrIndex++;
         }
         // Output data 
-        out100.println("--- MEAN ---");
+        out100.println("--- MEAN: # of Connected Components ---");
         for(int i= 0; i< meanHundred.length; i++) {
             out100.println(meanHundred[i]);
         }
         
-        out100.println("--- STANDARD DEVIATION ---");
+        out100.println("--- STANDARD DEVIATION: # of Connected Components ---");
         for(int i= 0; i< sdHundred.length; i++) {
             out100.println(sdHundred[i]);
         }
