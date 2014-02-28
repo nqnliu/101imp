@@ -123,10 +123,10 @@ public class RandomGraph {
     // Main
     public static void main( String [] args ) {
         // I/O stuff
-        File outFile= new File("n20.txt");
-        PrintWriter out= null;
+        File outFile20= new File("n20.txt");
+        PrintWriter out20= null;
         try {
-            out= new PrintWriter(new FileWriter(outFile));
+            out20= new PrintWriter(new FileWriter(outFile20));
         } catch (Exception e) {
             System.out.println("SOMETHING WRONG~");
         }
@@ -147,7 +147,7 @@ public class RandomGraph {
         // some counter for the arrays
         int arrIndex= 0;
 
-        out.println("Constructing Graph G(n,p), n = " + n);
+        out20.println("Constructing Graph G(n,p), n = " + n);
 
         // for increments of p
         for (double p= 0; p<= 1.00; p+= 0.02) {
@@ -164,67 +164,122 @@ public class RandomGraph {
             // store mean
             meanTwenty[arrIndex]= compute_mean(kCC, k);
             long endTime= System.currentTimeMillis();
-            double meanTime= (endTime- startTime)/ (double)(1000);
+            double meanTime= (endTime- startTime);
             runtimeMeanTwenty[arrIndex]= meanTime;
 
             // store sd
             startTime= System.currentTimeMillis();
             sdTwenty[arrIndex]= std_dev(kCC, k, meanTwenty[arrIndex]);
             endTime= System.currentTimeMillis();
-            double sdTime= (endTime- startTime)/ (double)(1000);
+            double sdTime= (endTime- startTime);
             runtimeSdTwenty[arrIndex]= sdTime;
 
             // inc index
             arrIndex++;
         }
         // Output data 
-        out.println("--- MEAN ---");
+        out20.println("--- MEAN ---");
         for(int i= 0; i< meanTwenty.length; i++) {
-            out.println(meanTwenty[i]);
+            out20.println(meanTwenty[i]);
         }
         
-        out.println("--- STANDARD DEVIATION ---");
+        out20.println("--- STANDARD DEVIATION ---");
         for(int i= 0; i< sdTwenty.length; i++) {
-            out.println(sdTwenty[i]);
+            out20.println(sdTwenty[i]);
         }
 
-        out.println("--- RUNTIME: Mean ---");
+        out20.println("--- RUNTIME: Mean (in Milliseconds) ---");
         for(int i= 0; i< runtimeMeanTwenty.length; i++) {
-            out.println(runtimeMeanTwenty[i]);
+            out20.println(runtimeMeanTwenty[i]);
         }
 
-        out.println("--- RUNTIME: Standard Deviation ---");
+        out20.println("--- RUNTIME: Standard Deviation (in Milliseconds) ---");
         for(int i= 0; i< runtimeSdTwenty.length; i++) {
-            out.println(runtimeSdTwenty[i]);
+            out20.println(runtimeSdTwenty[i]);
         }
-
+        // close the writer
+        out20.close();
         
 
-        /***** For n = 100 *****
-        int n= 100;
-        int k= 200;
-        // an array to store mean for n= 100
-        double[] meanHundred= new double[50];
-        // an array to store sd for n= 100
-        double[] sdHundred= new double[50];
-        // an array to store runtime for n= 100
-        double[] sdHundred= new double[50];
 
-        System.out.println("Constructing Graph G(n,p), n = " + n);
+         // I/O stuff
+        File outFile100= new File("n100.txt");
+        PrintWriter out100= null;
+        try {
+            out100= new PrintWriter(new FileWriter(outFile100));
+        } catch (Exception e) {
+            System.out.println("SOMETHING WRONG~");
+        }
+
+        /***** For n = 100 *****/
+        n= 100;
+        //int k= 200;
+        // an array to store each k, varies for each p
+        //double[] kCC= new double[200];
+        // an array to store mean for n= 20
+        //double[] meanTwenty= new double[51];
+        // an array to store sd for n= 20
+        //double[] sdTwenty= new double[51];
+        // an array to store runtime for mean, n= 20
+        //double[] runtimeMeanTwenty= new double[51];
+        // an array to store runtime for sd, n= 20
+        //double[] runtimeSdTwenty= new double[51];
+
+        // some counter for the arrays
+        arrIndex= 0;
+
+        out100.println("Constructing Graph G(n,p), n = " + n);
 
         // for increments of p
-        for (double p= 0; p<= 1.00; j+= 0.02) {
+        for (double p= 0; p<= 1.00; p+= 0.02) {
             // Make k instances of the graph
+            int sumCC= 0;
             for (int i= 0; i< k; i++) {
                 RandomGraph rg = new RandomGraph(n, p);
-                int numCC= rg.getCC;
+                int numCC= rg.getCC();
+                // store current k
+                kCC[i]= numCC;
             }
-        }
-        // Print data
-        */
 
-    // close the file
-    out.close();
+            long startTime= System.currentTimeMillis();
+            // store mean
+            meanTwenty[arrIndex]= compute_mean(kCC, k);
+            long endTime= System.currentTimeMillis();
+            double meanTime= (endTime- startTime);
+            runtimeMeanTwenty[arrIndex]= meanTime;
+
+            // store sd
+            startTime= System.currentTimeMillis();
+            sdTwenty[arrIndex]= std_dev(kCC, k, meanTwenty[arrIndex]);
+            endTime= System.currentTimeMillis();
+            double sdTime= (endTime- startTime);
+            runtimeSdTwenty[arrIndex]= sdTime;
+
+            // inc index
+            arrIndex++;
+        }
+        // Output data 
+        out100.println("--- MEAN ---");
+        for(int i= 0; i< meanTwenty.length; i++) {
+            out100.println(meanTwenty[i]);
+        }
+        
+        out100.println("--- STANDARD DEVIATION ---");
+        for(int i= 0; i< sdTwenty.length; i++) {
+            out100.println(sdTwenty[i]);
+        }
+
+        out100.println("--- RUNTIME: Mean (in Milliseconds) ---");
+        for(int i= 0; i< runtimeMeanTwenty.length; i++) {
+            out100.println(runtimeMeanTwenty[i]);
+        }
+
+        out100.println("--- RUNTIME: Standard Deviation (in Milliseconds) ---");
+        for(int i= 0; i< runtimeSdTwenty.length; i++) {
+            out100.println(runtimeSdTwenty[i]);
+        }
+        // close the file
+        out100.close();
     }
 }
 
