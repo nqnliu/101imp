@@ -94,8 +94,52 @@ public class RandomGraph {
 
     // Test main for now..
     public static void main( String [] args ) {
-        RandomGraph rg = new RandomGraph(100, .01);
-        System.out.println( rg.getCC() );
+        /***** For n = 20 *****/
+        int n= 20;
+        int k= 200;
+        // an array to store mean for n= 20
+        double[] meanTwenty= new double[50];
+        // an array to store sd for n= 20
+        double[] sdTwenty= new double[50];
+        // an array to store runtime for n= 20
+        double[] rtTwenty= new double[50]
+
+        System.out.println("Constructing Graph G(n,p), n = " + n);
+
+        // for increments of p
+        for (double p= 0; p<= 1.00; j+= 0.02) {
+            // Make k instances of the graph
+            for (int i= 0; i< k; i++) {
+                RandomGraph rg = new RandomGraph(n, p);
+                int numCC= rg.getCC;
+            }
+        }
+        // Print data
+
+        
+        /***** For n = 100 *****/
+        int n= 100;
+        int k= 200;
+        // an array to store mean for n= 100
+        double[] meanHundred= new double[50];
+        // an array to store sd for n= 100
+        double[] sdHundred= new double[50];
+        // an array to store runtime for n= 100
+        double[] sdHundred= new double[50];
+
+        System.out.println("Constructing Graph G(n,p), n = " + n);
+
+        // for increments of p
+        for (double p= 0; p<= 1.00; j+= 0.02) {
+            // Make k instances of the graph
+            for (int i= 0; i< k; i++) {
+                RandomGraph rg = new RandomGraph(n, p);
+                int numCC= rg.getCC;
+            }
+        }
+        // Print data
+
+
     }
 }
 
