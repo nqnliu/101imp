@@ -17,22 +17,22 @@ public class RandomGraph {
         }
     }
 
-    ArrayList<Vertex> vertices; // list of all vertices in the Graph
+    Vertex[] vertices; // list of all vertices in the Graph
     
     public RandomGraph( int n, double p ) {
         // initialization
         Random generator = new Random();
-        vertices = new ArrayList<Vertex>();
+        vertices = new Vertex[n];
 
         // create/add N amount of vertices into the ArrayList
         for ( int i = 0; i < n; i++ ) {
-            vertices.add( new Vertex() );
+            vertices[i] = new Vertex();
         }
 
         // generate random edges
         for ( int i = 0; i < n; i++ ) {
             for ( int j = 0; j < n; j++ ) {
-                if ( i != j && generator.nextDouble() < p ) {
+                if ( i < j && generator.nextDouble() < p ) {
                     addEdge(i, j, generator.nextDouble());
                 }
             }
@@ -41,8 +41,8 @@ public class RandomGraph {
 
     // Adds an edge using the INDICES of two vertices in the ArrayList
     public void addEdge( int i, int j, double weight ) {
-        Vertex u = vertices.get( i );
-        Vertex v = vertices.get( j );
+        Vertex u = vertices[i];
+        Vertex v = vertices[j];
         u.adjacencyList.put( v, weight );
         v.adjacencyList.put( u, weight );
     }
@@ -94,7 +94,7 @@ public class RandomGraph {
     */
 
     // Calculate mean
-    private static double compute_mean(double a[], int n) {
+    private static double compute_mean(int a[], int n) {
         if(n== 0)
             return 0.0;
         double sum= 0.0;
@@ -106,22 +106,95 @@ public class RandomGraph {
     }
 
     // Calculate standard deviation
-    private static double std_dev(double a[], int n, double mean) {
+    private static double std_dev(int a[], int n, double mean) {
         if(n == 0)
             return 0.0;
-        double sq_diff_sum = 0;
+        double sq_diff_sum = 0.0;
         for(int i = 0; i < n; ++i) {
             double diff = a[i] - mean;
             sq_diff_sum += diff * diff;
         }
         double variance = sq_diff_sum / n;
         return Math.sqrt(variance);
-} 
+    } 
+
+    private static void getCCStats( int nVertices, int nTrials, String fileName ) {
+        // I/O stuff
+        File outFile= new File(fileName);
+        PrintWriter out= null;
+        try {
+            out= new PrintWriter(new FileWriter(outFile));
+        } catch (Exception e) {
+            System.out.println("SOMETHING WRONG~");
+        }
+
+        /***** For n = 20 *****/
+        int n= nVertices;
+        int k= nTrials;
+        // an array to store each k, varies for each p
+        int[] kCC= new int[k];
+        // an array to store mean for n= 20
+        double[] meanTwenty= new double[51];
+        // an array to store sd for n= 20
+        double[] sdTwenty= new double[51];
+        // an array to store runtime for mean, n= 20
+        double[] runtimeMeanTwenty= new double[51];
+        // an array to store runtime for sd, n= 20
+        double[] runtimeSdTwenty= new double[51];
+        // some counter for the arrays
+        double[] runtime = new double[51];
+
+        int arrIndex= 0;
+
+        out.println("Constructing Graph G(n,p), n = " + n);
+
+        // for increments of p
+        for (int p= 0; p<= 100; p+= 2) {
+            // Make k instances of the graph
+            int sumCC= 0;
+
+            long startTime= System.currentTimeMillis();
+            for (int i= 0; i< k; i++) {
+                RandomGraph rg = new RandomGraph(n, p/100.0);
+                int numCC= rg.getCC();
+                // store current k
+                kCC[i]= numCC;
+            }
+
+            // store mean
+            meanTwenty[arrIndex]= compute_mean(kCC, k);
+            long endTime= System.currentTimeMillis();
+
+            // store sd
+            sdTwenty[arrIndex]= std_dev(kCC, k, meanTwenty[arrIndex]);
+            double sdTime= (endTime- startTime);
+            runtime[arrIndex] = sdTime;
+
+
+            // inc index
+            arrIndex++;
+        }
+
+        // Output data 
+        out.println("--- MEAN: # of Connected Components ---");
+        out.format("%s\t%10s\t%10s\t%10s\n", "p", "mean", "stdev", "runtime" );
+        for(int i= 0; i< meanTwenty.length; i++) {
+            out.format("%.2f\t%10f\t%10f\t%10f\n", (i*2)/100.0, meanTwenty[i], sdTwenty[i], runtime[i]);
+        }
+        // close the writer
+        out.close();
+    }
 
 /********************************** MAIN ****************************************/
 
     // Main
     public static void main( String [] args ) {
+        getCCStats( 20, 200, "n20.txt" );
+        getCCStats( 100, 200, "n100.txt" );
+        getCCStats( 500, 200, "n500.txt" );
+        getCCStats( 1000, 200, "n1000.txt" );
+
+        /*
         // I/O stuff
         File outFile20= new File("n20.txt");
         PrintWriter out20= null;
@@ -132,6 +205,7 @@ public class RandomGraph {
         }
 
         /***** For n = 20 *****/
+        /*
         int n= 20;
         int k= 200;
         // an array to store each k, varies for each p
@@ -152,7 +226,6 @@ public class RandomGraph {
 
         // for increments of p
         for (int p= 0; p<= 100; p+= 2) {
-            System.out.println( p );
             // Make k instances of the graph
             int sumCC= 0;
 
@@ -160,8 +233,6 @@ public class RandomGraph {
             for (int i= 0; i< k; i++) {
                 RandomGraph rg = new RandomGraph(n, p/100.0);
                 int numCC= rg.getCC();
-                if ( p == 1.00 ) 
-                    System.out.println( numCC );
                 // store current k
                 kCC[i]= numCC;
             }
@@ -181,29 +252,33 @@ public class RandomGraph {
         }
         // Output data 
         out20.println("--- MEAN: # of Connected Components ---");
+        out20.format("p \t mean \n" );
         for(int i= 0; i< meanTwenty.length; i++) {
-            out20.format("%f\n", meanTwenty[i]);
+            out20.format("%.2f\t%f\n", (i*2)/100.0, meanTwenty[i]);
         }
             
         out20.println("--- STANDARD DEVIATION: # of Connected Components ---");
+        out20.format("p \t stdev\n" );
         for(int i= 0; i< sdTwenty.length; i++) {
-            out20.println(sdTwenty[i]);
+            out20.format("%.2f\t%f\n", (i*2)/100.0, sdTwenty[i]);
         }
 
         out20.println("--- RUNTIME: Mean (in Milliseconds) ---");
+        out20.format("p \t runtime \n" );
         for(int i= 0; i< runtimeMeanTwenty.length; i++) {
-            out20.println(runtime[i]);
+            out20.format("%.2f\t%f\n", (i*2)/100.0, runtime[i]);
         }
 
         out20.println("--- RUNTIME: Standard Deviation (in Milliseconds) ---");
+        out20.format("p \t mean" );
         for(int i= 0; i< runtimeSdTwenty.length; i++) {
             out20.println(runtimeSdTwenty[i]);
         }
         // close the writer
         out20.close();
         
-
-
+        */
+        /*
          // I/O stuff
         File outFile100= new File("n100.txt");
         PrintWriter out100= null;
@@ -212,8 +287,9 @@ public class RandomGraph {
         } catch (Exception e) {
             System.out.println("SOMETHING WRONG~");
         }
-
+        
         /***** For n = 100 *****/
+        /*
         n= 100;
         //int k= 200;
         // an array to store each k, varies for each p
@@ -282,6 +358,7 @@ public class RandomGraph {
         }
         // close the file
         out100.close();
+        */
     }
 }
 
