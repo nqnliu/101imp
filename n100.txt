@@ -1,6 +1,3 @@
-Constructing Graph G(n,p), n = 100
---- MEAN: # of Connected Components ---
-p	      mean	     stdev	   runtime
 0.00	100.000000	  0.000000	 54.000000
 0.02	 17.785000	  4.610724	 56.000000
 0.04	  2.925000	  1.410452	 63.000000
