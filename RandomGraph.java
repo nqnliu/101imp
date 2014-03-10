@@ -7,11 +7,106 @@ import java.io.*;
  */
 public class RandomGraph {
 
+    Vertex[] vertices; // list of all vertices in the Graph
+    ArrayList<ConnectedComponent> ccs;
+    int nCC;
+    double weights = 0.0;
+    
+    public RandomGraph( int n, double p ) {
+        // initialization
+        Random generator = new Random();
+        vertices = new Vertex[n];
+
+        // create/add N amount of vertices into the ArrayList
+        for ( int i = 0; i < n; i++ ) {
+            vertices[i] = new Vertex(i);
+        }
+
+        // generate random edges
+        for ( int i = 0; i < n; i++ ) {
+            for ( int j = 0; j < n; j++ ) {
+                if ( i < j && generator.nextDouble() < p ) {
+                    addEdge(i, j, generator.nextDouble());
+                }
+            }
+        }
+        //System.out.println( weights/edges );
+        ccs = new ArrayList<ConnectedComponent>();
+    }
+
+    // Adds an edge using the INDICES of two vertices in the ArrayList
+    public void addEdge( int i, int j, double weight ) {
+        weights += weight;
+        Vertex u = vertices[i];
+        Vertex v = vertices[j];
+        Edge e = new Edge( u, v, weight );
+        u.adjacencyList.add( e );
+        v.adjacencyList.add( e );
+    }
+
+    // Returns the number of connected components in the graph
+    public int getCC(){
+        nCC = 0;
+
+        for ( Vertex v : vertices ) {
+            if ( v.visited == false ) {
+                ConnectedComponent cc = new ConnectedComponent();
+                ccs.add( cc );
+                dfs(v, cc);
+                nCC++;
+            }
+        }
+        return nCC;
+    }
+
+    public double getMSTCost() {
+        double sumCost = 0.0;
+
+        for( ConnectedComponent cc : ccs ) {
+            MST mst = cc.getMST();
+            sumCost += mst.cost;
+        }
+        return sumCost/(nCC*1.0);
+    }
+
+    public double getMSTDiam() {
+        double sumCost = 0.0;
+
+        for( ConnectedComponent cc : ccs ) {
+            MST mst = cc.mst;
+            int diam = mst.getDiameter();
+            sumCost += diam;
+        }
+        return sumCost/(nCC*1.0);
+    }
+
+    // Perform DFS on a vertex to explore all reachable nodes
+    public void dfs( Vertex s, ConnectedComponent cc ) {
+        Stack<Vertex> stack = new Stack<Vertex>();
+        
+        stack.push( s );
+        while( stack.empty() == false ) {
+            Vertex u = stack.pop();
+            if ( u.visited == false )
+                u.visited = true;
+            else 
+                continue;
+                
+            cc.ccVertices.add(u);
+            for ( Edge e : u.adjacencyList ) {
+                stack.push(e.other(u));
+            }
+        }
+    }
+
     private class Vertex {
         boolean visited;
         ArrayList<Edge> adjacencyList; // holds Vertex and weight
+        int i;
+        int level;
 
-        public Vertex() {
+        public Vertex( int index ) {
+            i = index;
             visited = false;
             adjacencyList = new ArrayList<Edge>();
         }
@@ -37,202 +132,144 @@ public class RandomGraph {
                 return 0;
         }
 
-    }
-
-    Vertex[] vertices; // list of all vertices in the Graph
-    
-    public RandomGraph( int n, double p ) {
-        // initialization
-        Random generator = new Random();
-        vertices = new Vertex[n];
-
-        // create/add N amount of vertices into the ArrayList
-        for ( int i = 0; i < n; i++ ) {
-            vertices[i] = new Vertex();
+        public Vertex other( Vertex v ) {
+            if ( v == this.u ) 
+                return this.v;
+            else
+                return this.u;
         }
 
-        // generate random edges
-        for ( int i = 0; i < n; i++ ) {
-            for ( int j = 0; j < n; j++ ) {
-                if ( i < j && generator.nextDouble() < p ) {
-                    addEdge(i, j, generator.nextDouble());
+    }
+
+    public class ConnectedComponent {
+        ArrayList<Vertex> ccVertices;
+        PriorityQueue<Edge> pq;
+        MST mst;
+
+        public ConnectedComponent() {
+            ccVertices = new ArrayList<Vertex>();
+            pq = new PriorityQueue<Edge>();
+            mst = null;
+        }
+
+        public MST getMST() {
+            mst = new MST();
+            for( Vertex v : ccVertices ) {
+                if (v.visited)
+                    prim(mst, v);
+            }
+            
+            return mst;
+        }
+
+        public void prim( MST mst, Vertex v ) {
+            scan( v );
+            // Pq of edges
+            while( pq.isEmpty() == false ) {
+                Edge top = pq.poll();
+                if (top.u.visited == false && top.v.visited == false)
+                    continue;
+
+                mst.edges.add( top );
+                mst.cost += top.weight;
+
+                if (top.u.visited) 
+                    scan( top.u );
+
+                if (top.v.visited)
+                    scan( top.v );
+            }
+        }
+
+        public void scan( Vertex v ) {
+            v.visited = false;
+            for( Edge e: v.adjacencyList ) {
+                Vertex w = e.other(v);
+                if( !w.visited ) continue;
+                pq.add(e);
+            }
+        }
+    }
+
+    public class MST {
+        ArrayList<Edge> edges;
+        HashMap<Integer,Vertex> vertices;
+
+        double cost;
+
+        public MST() {
+            edges = new ArrayList<Edge>();
+            vertices = new HashMap<Integer, Vertex>();
+            cost = 0.0;
+        }
+
+        public void createMST() {
+            for ( Edge e : edges ) {
+                Vertex w1;
+                if( vertices.get( e.u.i ) == null ) {
+                    w1 = new Vertex( e.u.i );
+                    vertices.put( e.u.i, w1 );
+                } else {
+                    w1 = vertices.get( e.u.i );
+                }
+
+                Vertex w2;
+                if( vertices.get( e.v.i ) == null ) {
+                    w2 = new Vertex( e.v.i );
+                    vertices.put( e.v.i, w2 );
+                } else {
+                    w2 = vertices.get( e.v.i );
+                }
+                Edge e2 = new Edge( w1, w2, e.weight );
+                //System.out.println( w1.i + "--" + w2.i );
+                w1.adjacencyList.add( e2 );
+                w2.adjacencyList.add( e2 );                
+            }
+        }
+
+        public int getDiameter() {
+            if( edges.size() == 0 )
+                return 0;
+
+            createMST();
+
+            Queue<Vertex> queue = new LinkedList<Vertex>();
+
+            queue.add( vertices.get(edges.get(0).u.i) );
+            Vertex w = null;
+            while ( !queue.isEmpty() ) {
+                Vertex u = queue.remove();
+                u.visited = true;
+
+                for( Edge e: u.adjacencyList ) {
+                    w = e.other(u);
+                    //System.out.println( u.i + "--" + w.i );
+                    if( !w.visited )
+                        queue.add(w);
                 }
             }
-        }
-    }
 
-    // Adds an edge using the INDICES of two vertices in the ArrayList
-    public void addEdge( int i, int j, double weight ) {
-        Vertex u = vertices[i];
-        Vertex v = vertices[j];
-        Edge e = new Edge( u, v, weight );
-        u.adjacencyList.add( e );
-        v.adjacencyList.add( e );
-    }
+            queue.add( w );
+            w.level = 0;
+            boolean branch = false;
 
-    // Returns the number of connected components in the graph
-    public int getCC(){
-        int cc = 0;
+            while ( !queue.isEmpty() ) {
+                Vertex u = queue.remove();
+                u.visited = false;
+                branch = true;
 
-        // Everything below is DFS
-        for ( Vertex v : vertices ) {
-            v.visited = false;
-        }
-
-        for ( Vertex v : vertices ) {
-            if ( v.visited == false ) {
-                dfs(v);
-                cc++;
-            }
-        }
-
-        return cc;
-    }
-
-    // Perform DFS on a vertex to explore all reachable nodes
-    public void dfs( Vertex s ) {
-        Stack<Vertex> stack = new Stack<Vertex>();
-        
-        stack.push( s );
-        while( stack.empty() == false ) {
-            Vertex u = stack.pop();
-            if ( u.visited == false )
-                u.visited = true;
-            else 
-                continue;
-            
-            for ( Edge e : u.adjacencyList ) {
-                stack.push(e.v);
-            }
-        }        
-    }
-
-    // Calculate mean
-    private static double compute_mean(int a[], int n) {
-        if(n== 0)
-            return 0.0;
-        double sum= 0.0;
-        for(int i= 0; i< n; i++) {
-            sum+= a[i];
-        }
-        double mean= sum/ n;
-        return mean;
-    }
-
-    // Calculate standard deviation
-    private static double std_dev(int a[], int n, double mean) {
-        if(n == 0)
-            return 0.0;
-        double sq_diff_sum = 0.0;
-        for(int i = 0; i < n; ++i) {
-            double diff = a[i] - mean;
-            sq_diff_sum += diff * diff;
-        }
-        double variance = sq_diff_sum / n;
-        return Math.sqrt(variance);
-    } 
-
-    private static void getCCStats( int nVertices, int nTrials, String fileName) {
-        // I/O stuff
-        File outFile= new File(fileName);
-        File outFile2= new File("n" + nVertices + "graphCCruntime.txt");
-        PrintWriter out= null;
-        PrintWriter out2 = null;
-        try {
-            out= new PrintWriter(new FileWriter(outFile));
-            out2 = new PrintWriter(new FileWriter(outFile2));
-        } catch (Exception e) {
-            System.out.println("SOMETHING WRONG~");
-        }
-
-        /***** For n = 20 *****/
-        int n= nVertices;
-        int k= nTrials;
-        // an array to store each k, varies for each p
-        int[] kCC= new int[k];
-        // an array to store mean for n= 20
-        double[] mean= new double[51];
-        // an array to store sd for n= 20
-        double[] sd= new double[51];
-        // an array to store runtime for mean, n= 20
-        double[] runtimeGraph= new double[51];
-        // an array to store runtime for sd, n= 20
-        double[] runtimeCC= new double[51];
-        // some counter for the arrays
-        double[] runtime = new double[51];
-
-        int arrIndex= 0;
-
-        out.println("Constructing Graph G(n,p), n = " + n);
-
-        // for increments of p
-        for (int p= 0; p<= 100; p+= 2) {
-            // Make k instances of the graph
-            int sumCC= 0;
-
-            for (int i= 0; i< k; i++) {
-                long startTime= System.currentTimeMillis();
-                RandomGraph rg = new RandomGraph(n, p/100.0);
-                long endTime= System.currentTimeMillis();
-                runtimeGraph[arrIndex] += (endTime-startTime);
-
-                startTime = System.currentTimeMillis();
-                int numCC= rg.getCC();
-                endTime = System.currentTimeMillis();
-                runtimeCC[arrIndex] += (endTime-startTime);
-
-                // store current k
-                kCC[arrIndex] = numCC;
+                for( Edge e: u.adjacencyList ) {
+                    w = e.other(u);
+                    if( w.visited ) {
+                        queue.add(w);
+                        w.level = u.level + 1;
+                        branch = false;
+                    }
+                }
             }
 
-            // store mean
-            mean[arrIndex] = compute_mean(kCC, k);
-
-            // store runtime of creating graph
-            runtimeGraph[arrIndex] /= k*1.0;
-            runtimeCC[arrIndex] /= k*1.0;
-
-            // store sd
-            sd[arrIndex]= std_dev(kCC, k, mean[arrIndex]);
-
-            // inc index
-            arrIndex++;
+            return w.level;
         }
-
-        // Output data 
-        /*out.println("--- MEAN: # of Connected Components ---");
-        out.format("%s\t%10s\t%10s\t%10s\n", "p", "mean", "stdev", "runtime" );*/
-        for(int i= 0; i< mean.length; i++) {
-            out.format("%.2f\t%10f\t%10f\t%n", (i*2)/100.0, mean[i], sd[i]);
-            out2.format("%10f\t%10f%n", runtimeGraph[i], runtimeCC[i]);
-        }
-
-        // close the writer
-        out.close();
-        out2.close();
-    }
-
-    public void getPrim() {
-        // Pq of edges
-        PriorityQueue<Edge> pq = new PriorityQueue<Edge>();
-        
-        for( Vertex v : vertices ) {
-            for( Edge e: v.adjacencyList ) {
-                pq.add( e );
-            }
-        }
-
-        
-    }
-
-/********************************** MAIN ****************************************/
-
-    // Main
-    public static void main( String [] args ) {
-        getCCStats( 20, 500, "n20.txt" );
-        getCCStats( 100, 500, "n100.txt" );
-        getCCStats( 500, 500, "n500.txt" );
-        getCCStats( 1000, 500, "n1000.txt" );
     }
 }
 
