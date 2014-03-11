@@ -29,9 +29,9 @@ public class RandomPointset {
 
         // for sorting
         public int compareTo(PointData pd) {
-            if (this.angle < pd.angle)
+            if (this.angle > pd.angle)
                 return -1;
-            else if (this.angle > pd.angle)
+            else if (this.angle < pd.angle)
                 return 1;
             else
                 return 0;
@@ -92,24 +92,27 @@ public class RandomPointset {
         // move min to beginning of array
         swapPoints(myPS, 0, min);
 
+        // the base point
+        //System.out.println("BASE POINT: " + myPS[0].stringPoint());
+
         // (1): find angles from base (pointSet[min])
         // make array size n-1
         ArrayList<PointData> ccw= new ArrayList<PointData>();
         double ang;
-        for (int i= 2; i < myPS.length; i++) {
-            ang= isLeft(myPS[0], myPS[1], myPS[i]);
+        for (int i= 1; i < myPS.length; i++) {
+            ang= findAngle(myPS[0], myPS[i]);
             ccw.add(new PointData(ang, myPS[i]));
         }
         // add the pivot point
-        ccw.add(new PointData(0, myPS[1]));
+        //ccw.add(new PointData(0, myPS[1]));
 
         // (2): Sort ccw by ccw angles
         Collections.sort(ccw);     // DOES THIS USE QUICKSORT?
         
         // testing
 	    for (Iterator<PointData> i=ccw.iterator(); i.hasNext(); ) {
-	    PointData data = i.next();
-	    System.out.println(data.angle + " --- " + data.p.stringPoint());
+	        PointData data = i.next();
+	        //System.out.println(data.angle + " --- " + data.p.stringPoint());
 	    }
 
         // (3): create the stack(convex hull) of Points
@@ -117,32 +120,43 @@ public class RandomPointset {
         Stack<Point> pointStack= new Stack<Point>();
         // push base
         pointStack.push(myPS[0]);
+        // if the base ONLY exists
+        if (ccw.isEmpty()) {
+            //System.out.println("A BASE HULL!");
+            Point[] basehull = new Point[1];
+            basehull[0]= pointStack.pop();
+            return basehull;
+        }
+
         // push rightmost ccw element
         pointStack.push(ccw.get(0).p);
         // then we look for CH points
         int n= 1;
         while (n < ccw.size()) {
-            System.out.println("entering STACK");
+            //System.out.println("entering STACK");
             Point c= pointStack.pop();
-            System.out.println("POPPING " + c.stringPoint() );
+            //System.out.println("POPPING " + c.stringPoint() );
             Point p= pointStack.peek();
             Point nPoint= ccw.get(n).p;
-            System.out.println("ISLEFT: "+ isLeft(p, c, nPoint) );
-            if (isLeft(p, c, nPoint) > 0) {
+            //System.out.println("CHECKING POINTS: \n" +
+                    //p.stringPoint() + "\n" +
+                    //c.stringPoint() + "\n" +
+                    //nPoint.stringPoint());
+            //System.out.println("ISLEFT: "+ isLeft(p, c, nPoint) );
+            if (isLeft(p, c, nPoint) < 0) {
                pointStack.push(c);
                pointStack.push(nPoint);
                n++;
             }
-            // MUST CHECK IS COLLINEAR, ERROR SOMEWHERE HERE!!!
         }
 
         // stack to array
         Point[] convexhull= new Point[pointStack.size()];
         int z= 0;
-        System.out.println("THE CONVEX HULL:");
+        //System.out.println("THE CONVEX HULL:");
         while(pointStack.empty()==false) {
             Point hullpoint= pointStack.pop();
-            System.out.println(hullpoint.stringPoint());
+            //System.out.println(hullpoint.stringPoint());
             convexhull[z]= hullpoint;
             z++;
         }
@@ -152,9 +166,21 @@ public class RandomPointset {
         return convexhull;
     }
 
+    // find an angle based on a base point base and a point p
+    // the greater, the more cw
+    public static double findAngle(Point b, Point p) {
+        double dx= p.x - b.x;
+        double dy= p.y - b.y;
+        
+        if (dy == 0) 
+            return -10000;
+        return  dx / dy;
+    }
+
+    // check if point p2, is left of line p0-p1
     public static double isLeft(Point p0, Point p1, Point p2) {
-        return ( (p1.x - p0.x) * (p2.y - p0.y)
-                - (p2.x - p0.x) * (p1.y - p0.y) );
+        return (p1.y - p0.y) * (p2.x - p1.x) -
+              (p1.x - p0.x) * (p2.y - p1.y);
     }
 
     public static void swapPoints(Point[] ps, int a, int b) {
@@ -184,14 +210,124 @@ public class RandomPointset {
     }
 
 
+    // THE TRIALS
+    public static void rpsTrials(int n, int k) {
+        // array to store # of hulls for each k
+        int[] hulls= new int[k];
+        // array to store runtime of rps construction
+        double[] runtimeRPS= new double[k];
+        // array to store runtime of hull finding
+        double[] runtimeCHulls= new double[k];
+
+        for (int i= 0; i < k; i++) {
+
+            long startTime= System.currentTimeMillis();
+            RandomPointset rps= new RandomPointset(n);
+            long endTime= System.currentTimeMillis();
+            runtimeRPS[i]= (double)(endTime-startTime);
+
+            startTime= System.currentTimeMillis();
+            hulls[i]= rps.findConvexHulls(); 
+            endTime= System.currentTimeMillis();
+            runtimeCHulls[i]= (double)(endTime-startTime);
+        }
+        //
+        double mean= find_mean(hulls, k);
+        double stddev= std_dev(hulls, k, mean);
+        System.out.println("Mean # of SHELLS for n="+n +": "+ mean );
+        System.out.println("std_dev of SHELLS for n="+n +": "+ stddev );
+
+        double runtimeRPSmean= find_mean(runtimeRPS, k);
+        double runtimeRPSsd= std_dev(runtimeRPS, k, runtimeRPSmean);
+        System.out.println("Mean # of SHELLS for n="+n +": "+ runtimeRPSmean );
+        System.out.println("std_dev of SHELLS for n="+n +": "+ runtimeRPSsd );
+
+        double runtimeCHmean= find_mean(runtimeCHulls, k);
+        double runtimeCHsd= std_dev(runtimeCHulls, k, runtimeCHmean);
+        System.out.println("Mean # of SHELLS for n="+n +": "+ runtimeCHmean );
+        System.out.println("std_dev of SHELLS for n="+n +": "+ runtimeCHsd );
+        
+    }
+
+    private static double find_mean(int a[], int n) {
+        if(n== 0)
+            return 0.0;
+        double sum= 0.0;
+        for(int i= 0; i< n; i++) {
+            sum+= a[i];
+        }
+        double mean= sum/ n;
+        return mean;
+    }
+
+    private static double find_mean(double a[], int n) {
+        if(n== 0)
+            return 0.0;
+        double sum= 0.0;
+        for(int i= 0; i< n; i++) {
+            sum+= a[i];
+        }
+        double mean= sum/ n;
+        return mean;
+    }
+
+
+    // Calculate standard deviation
+    private static double std_dev(int a[], int n, double mean) {
+        if(n == 0)
+            return 0.0;
+        double sq_diff_sum = 0.0;
+        for(int i = 0; i < n; ++i) {
+            double diff = a[i] - mean;
+            sq_diff_sum += diff * diff;
+        }
+        double variance = sq_diff_sum / n;
+        return Math.sqrt(variance);
+    } 
+
+    private static double std_dev(double a[], int n, double mean) {
+        if(n == 0)
+            return 0.0;
+        double sq_diff_sum = 0.0;
+        for(int i = 0; i < n; ++i) {
+            double diff = a[i] - mean;
+            sq_diff_sum += diff * diff;
+        }
+        double variance = sq_diff_sum / n;
+        return Math.sqrt(variance);
+    } 
+
+
 
 /*********** MAIN *********/
 
     public static void main(String[] args) {
-        RandomPointset rps= new RandomPointset(20);
-        rps.printPoints();
-        //rps.grahamScan(rps.pointSet);
-        System.out.println("# OF CONVEX HULLS: "+rps.findConvexHulls());
+        // number of trials k
+        int k= 200;
+        
+        // for n = 20
+        rpsTrials(20, k);
+
+        // for n = 50
+        rpsTrials(50, k);
+
+        // for n = 100
+        rpsTrials(100, k);
+
+        // for n = 200
+        rpsTrials(200, k);
+        
+        // for n = 500
+        rpsTrials(500, k);
+        
+        // for n = 1000
+        rpsTrials(1000, k);
+        
+        // for n = 2000
+        rpsTrials(2000, k);
+
+        // for n = 3000
+        rpsTrials(3000, k);
     }
 
 }
