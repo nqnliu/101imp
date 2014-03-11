@@ -172,6 +172,9 @@ public class RandomGraph {
 
                 mst.edges.add( top );
                 mst.cost += top.weight;
+                if ( mst.edges.size() == ccVertices.size() - 1) {
+                    break;
+                }
 
                 if (top.u.visited) 
                     scan( top.u );
@@ -251,19 +254,16 @@ public class RandomGraph {
 
             queue.add( w );
             w.level = 0;
-            boolean branch = false;
 
             while ( !queue.isEmpty() ) {
                 Vertex u = queue.remove();
                 u.visited = false;
-                branch = true;
 
                 for( Edge e: u.adjacencyList ) {
                     w = e.other(u);
                     if( w.visited ) {
                         queue.add(w);
                         w.level = u.level + 1;
-                        branch = false;
                     }
                 }
             }

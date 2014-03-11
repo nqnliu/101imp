@@ -145,8 +145,7 @@ public class Main1 {
         
         getStats( 20, 500, "n20.txt" );
         getStats( 100, 500, "n100.txt" );
-        /*
-        getCCStats( 500, 500, "n500.txt" );
-        getCCStats( 1000, 500, "n1000.txt" );*/
+        getStats( 500, 500, "n500.txt" );
+        getStats( 1000, 500, "n1000.txt" );
     }
 }
