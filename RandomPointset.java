@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 public class RandomPointset {
 
@@ -211,29 +212,38 @@ public class RandomPointset {
 
 
     // THE TRIALS
-    public static void rpsTrials(int n, int k) {
+    public static void rpsTrials(PrintWriter out, int n, int k) {
         // array to store # of hulls for each k
         int[] hulls= new int[k];
         // array to store runtime of rps construction
-        double[] runtimeRPS= new double[k];
+        //double[] runtimeRPS= new double[k];
         // array to store runtime of hull finding
-        double[] runtimeCHulls= new double[k];
+        //double[] runtimeCHulls= new double[k];
+        // array runtime all
+        double[] runtimeAll= new double[k];
 
         for (int i= 0; i < k; i++) {
 
             long startTime= System.currentTimeMillis();
             RandomPointset rps= new RandomPointset(n);
-            long endTime= System.currentTimeMillis();
-            runtimeRPS[i]= (double)(endTime-startTime);
+            //long endTime= System.currentTimeMillis();
+            //runtimeRPS[i]= (double)(endTime-startTime);
 
-            startTime= System.currentTimeMillis();
+            //startTime= System.currentTimeMillis();
             hulls[i]= rps.findConvexHulls(); 
-            endTime= System.currentTimeMillis();
-            runtimeCHulls[i]= (double)(endTime-startTime);
-        }
-        //
-        double mean= find_mean(hulls, k);
-        double stddev= std_dev(hulls, k, mean);
+            long endTime= System.currentTimeMillis();
+            //runtimeCHulls[i]= (double)(endTime-startTime);
+            runtimeAll[i]= (double)(endTime-startTime);
+
+        } 
+        double meanhulls= find_mean(hulls, k);
+        double stddevhulls= std_dev(hulls, k, meanhulls);
+        double meanruntime= find_mean(runtimeAll, k);
+
+        // Output findings
+        out.format("%4d\t%10f\t%10f\t%10.3f%n", n, meanhulls, stddevhulls, meanruntime);
+        
+        /*
         System.out.println("Mean # of SHELLS for n="+n +": "+ mean );
         System.out.println("std_dev of SHELLS for n="+n +": "+ stddev );
 
@@ -246,7 +256,8 @@ public class RandomPointset {
         double runtimeCHsd= std_dev(runtimeCHulls, k, runtimeCHmean);
         System.out.println("Mean # of SHELLS for n="+n +": "+ runtimeCHmean );
         System.out.println("std_dev of SHELLS for n="+n +": "+ runtimeCHsd );
-        
+        */
+
     }
 
     private static double find_mean(int a[], int n) {
@@ -302,32 +313,46 @@ public class RandomPointset {
 /*********** MAIN *********/
 
     public static void main(String[] args) {
+        File outFile= new File("2a.txt");
+        PrintWriter out= null;
+        try {
+            out= new PrintWriter(new FileWriter(outFile));
+        } catch (Exception e) {
+            System.out.println("SOMETHING WRONG~");
+        }
+
+
+
+
+
         // number of trials k
         int k= 200;
         
         // for n = 20
-        rpsTrials(20, k);
+        rpsTrials(out, 20, k);
 
         // for n = 50
-        rpsTrials(50, k);
+        rpsTrials(out, 50, k);
 
         // for n = 100
-        rpsTrials(100, k);
+        rpsTrials(out, 100, k);
 
         // for n = 200
-        rpsTrials(200, k);
+        rpsTrials(out, 200, k);
         
         // for n = 500
-        rpsTrials(500, k);
+        rpsTrials(out, 500, k);
         
         // for n = 1000
-        rpsTrials(1000, k);
+        rpsTrials(out, 1000, k);
         
         // for n = 2000
-        rpsTrials(2000, k);
+        rpsTrials(out, 2000, k);
 
         // for n = 3000
-        rpsTrials(3000, k);
+        rpsTrials(out, 3000, k);
+
+        out.close();
     }
 
 }
